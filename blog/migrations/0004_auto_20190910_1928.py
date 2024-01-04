@@ -31,10 +31,10 @@ class Migration(migrations.Migration):
                 ('text', models.TextField(verbose_name='Текст комментария')),
                 ('author', models.ForeignKey(
                     on_delete=django.db.models.deletion.CASCADE,
-                    to=settings.AUTH_USER_MODEL, verbose_name='Автор', )),
+                    to=settings.AUTH_USER_MODEL, verbose_name='Автор')),
                 ('post', models.ForeignKey(
                     on_delete=django.db.models.deletion.CASCADE,
-                    to='blog.Post', verbose_name='Пост, к которому написан', related_name='comments to post')),
+                    to='blog.Post', verbose_name='Пост, к которому написан')),
             ],
         ),
         migrations.AddField(
