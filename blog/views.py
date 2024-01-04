@@ -8,12 +8,11 @@ def get_related_posts_count(tag):
 
 
 def serialize_post_optimized(post):
-
     return {
         'title': post.title,
         'teaser_text': post.text[:200],
         'author': post.author.username,
-        'comments_amount': post.comments.count(),
+        'comments_amount': Post.objects.annotate(comments_count=Count("comments")).filter(title=post),
         'image_url': post.image.url if post.image else None,
         'published_at': post.published_at,
         'slug': post.slug,
