@@ -1,7 +1,7 @@
 from django.db import models
 from django.urls import reverse
 from django.contrib.auth.models import User
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 
 
 class PostQuerySet(models.QuerySet):
@@ -13,6 +13,9 @@ class PostQuerySet(models.QuerySet):
         popular_posts = self.annotate(likes_count=Count("likes")).order_by("-likes_count")
         return popular_posts
 
+    def fetch_author_tag(self, popular_tags):
+        return self.select_related('author').prefetch_related(Prefetch('tags', queryset=popular_tags))
+
     def fetch_with_comments_count(self):
         """This fetch does not duplicate each post multiple times like using 'annotate' twice."""
         ids = [post.id for post in self]
@@ -23,7 +26,7 @@ class PostQuerySet(models.QuerySet):
         count_for_id = dict(ids_and_comments)
         for post in self:
             post.comments_count = count_for_id[post.id]
-        return posts_with_comments
+        return self
 
 
 class Post(models.Model):
@@ -66,6 +69,14 @@ class TagQuerySet(models.QuerySet):
     def popular(self):
         popular_tags = self.annotate(tags_count=Count("posts")).order_by("-tags_count")
         return popular_tags
+
+    def fetch_with_tags_count(self):
+        num_posts = self.annotate(tags_count=Count("posts"))
+        id_and_posts = num_posts.values_list("id", "tags_count")
+        count_for_id = dict(id_and_posts)
+        for tag in self:
+            tag.tags_count = count_for_id[tag.id]
+        return self
 
 
 class Tag(models.Model):
