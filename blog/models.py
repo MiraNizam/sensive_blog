@@ -70,8 +70,8 @@ class TagQuerySet(models.QuerySet):
         popular_tags = self.annotate(tags_count=Count("posts")).order_by("-tags_count")
         return popular_tags
 
-    def fetch_with_tags_count(self):
-        num_posts = self.annotate(tags_count=Count("posts"))
+    def fetch_with_posts_count(self):
+        num_posts = self.popular()
         id_and_posts = num_posts.values_list("id", "tags_count")
         count_for_id = dict(id_and_posts)
         for tag in self:
