@@ -1,3 +1,5 @@
 Django==4.0.1
 environs==9.3.0
-Pillow==23.2.1  # required by Windows environment
+django-debug-toolbar==4.2.0
+Pillow==10.2.0  # required by Windows environment
+
