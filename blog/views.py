@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Count
 from blog.models import Comment, Post, Tag
 
@@ -42,8 +42,9 @@ def index(request):
 
 
 def post_detail(request, slug):
-    post = Post.objects.get(slug=slug)
-    comments = post.comments.select_related("author").select_related("post")
+    posts = Post.objects.annotate(number_likes=Count("likes"))
+    post = get_object_or_404(posts, slug=slug)
+    comments = post.comments.select_related("author")
     serialized_comments = []
     for comment in comments:
         serialized_comments.append({
@@ -52,8 +53,6 @@ def post_detail(request, slug):
             'author': comment.author.username,
         })
 
-    likes = post.likes.all()
-
     related_tags = post.tags.all().fetch_with_posts_count()
 
     serialized_post = {
@@ -61,7 +60,7 @@ def post_detail(request, slug):
         'text': post.text,
         'author': post.author.username,
         'comments': serialized_comments,
-        'likes_amount': likes.count(),
+        'likes_amount': post.number_likes,
         'image_url': post.image.url if post.image else None,
         'published_at': post.published_at,
         'slug': post.slug,
@@ -83,7 +82,7 @@ def post_detail(request, slug):
 
 
 def tag_filter(request, tag_title):
-    tag = Tag.objects.get(title=tag_title)
+    tag = get_object_or_404(Tag, title=tag_title)
     popular_tags = Tag.objects.popular()
     most_popular_posts = Post.objects.popular()[:5].fetch_author_tag(popular_tags).fetch_with_comments_count()
     most_popular_tags = popular_tags[:5]
